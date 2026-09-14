@@ -21,3 +21,8 @@ app.include_router(produto_controller.router)
 @app.get("/")
 def raiz():
     return {"mensagem": "API de Produtos no ar. Acesse /docs para a documentação Swagger."}
+
+
+print("Iniciando app...")
+from app.controllers import produto_controller
+print("Controller importado com sucesso")

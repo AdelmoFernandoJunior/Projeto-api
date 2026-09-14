@@ -3,13 +3,8 @@ Configuração da conexão com o banco de dados.
 Usa SQLite para simplicidade (zero configuração), mas pode ser trocado
 para PostgreSQL/MySQL apenas mudando a DATABASE_URL.
 """
-try:
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker, declarative_base
-except Exception as e:
-    raise RuntimeError(
-        "SQLAlchemy is required but could not be imported. Install it with: pip install SQLAlchemy"
-    ) from e
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 DATABASE_URL = "sqlite:///./produtos.db"
 
