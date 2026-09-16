@@ -3,10 +3,13 @@ Configuração da conexão com o banco de dados.
 Usa SQLite para simplicidade (zero configuração), mas pode ser trocado
 para PostgreSQL/MySQL apenas mudando a DATABASE_URL.
 """
+from pathlib import Path
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "sqlite:///./produtos.db"
+DATABASE_PATH = Path(__file__).resolve().parent.parent / "produtos.db"
+DATABASE_URL = f"sqlite:///{DATABASE_PATH.as_posix()}"
 
 engine = create_engine(
     DATABASE_URL,

@@ -6,7 +6,18 @@
       "type": "debugpy",
       "request": "launch",
       "module": "uvicorn",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
       "args": ["app.main:app", "--reload"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Python: Teste manual da API",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "app.main",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "justMyCode": true
