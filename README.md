@@ -39,6 +39,12 @@ flowchart LR
 - O Model representa a entidade Produto no banco
 - O SQLite armazena os dados localmente
 
+### Diagramas arquiteturais
+
+- [C4 — Nível 1: Contexto](docs/c4_nivel1_contexto.png)
+- [C4 — Nível 2: Contêineres](docs/c4_nivel2_container.png)
+- [C4 — Nível 3: Componentes](docs/c4_nivel3_componentes.png)
+
 ## 4. Tecnologias utilizadas
 
 - Python 3.12+
