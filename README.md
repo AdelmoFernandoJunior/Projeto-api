@@ -1,25 +1,26 @@
-# API de Produtos — Desafio Final (Arquiteto(a) de Software)
+# API de Produtos - Desafio Final (Arquiteto(a) de Software)
 
-API REST em Python usando FastAPI, desenvolvida no padrão arquitetural MVC em camadas, com persistência em SQLite via SQLAlchemy. A aplicação expõe um CRUD completo para o domínio Produto, além de endpoints para listagem, busca por nome, contagem e atualização de registros.
+API REST local em Python usando FastAPI, organizada em camadas inspiradas no padrão MVC, com persistência em SQLite via SQLAlchemy. A aplicação oferece CRUD completo para produtos, busca por nome, busca por ID e contagem de registros.
 
 ## 1. Contexto do desafio
 
-Este projeto foi desenvolvido como solução para o desafio final do bootcamp de Arquiteto(a) de Software. O objetivo principal é demonstrar a criação de uma API REST pública, com organização em camadas, seguindo boas práticas de arquitetura e separação de responsabilidades.
+Este projeto foi desenvolvido como solução para o desafio final do bootcamp de Arquiteto(a) de Software. O objetivo é demonstrar uma API REST organizada em camadas, com separação de responsabilidades e persistência de dados.
 
-O domínio escolhido foi Produto, por ser simples, objetivo e adequado para representar operações CRUD e regras de negócio em uma API.
+O domínio escolhido foi Produto, por ser adequado para representar operações CRUD e regras de validação em uma API.
 
 ## 2. Objetivos alcançados
 
 - Implementar uma API RESTful em Python com FastAPI
-- Seguir a arquitetura MVC em camadas
+- Organizar a aplicação em camadas de Controller, Service, Repository, Model e Schema
 - Criar operações de CRUD para produtos
-- Incluir endpoints de contagem e busca por nome
+- Incluir busca por ID, busca por nome e contagem
 - Persistir os dados em SQLite
-- Documentar a aplicação e a estrutura do projeto
+- Documentar a API com Swagger/OpenAPI
+- Criar testes unitários e integrados
 
 ## 3. Arquitetura da solução
 
-A aplicação foi organizada em camadas, separando responsabilidades entre apresentação, regras de negócio, acesso a dados e persistência.
+A aplicação separa as responsabilidades entre entrada HTTP, orquestração, acesso a dados e persistência.
 
 ```mermaid
 flowchart LR
@@ -32,18 +33,18 @@ flowchart LR
 
 ### Visão arquitetural
 
-- Cliente faz requisições HTTP para os endpoints da API
-- O Controller recebe e encaminha a requisição
-- O Service executa a lógica de negócio
-- O Repository centraliza as operações de persistência
+- O cliente faz requisições HTTP para os endpoints da API
+- O Controller recebe a requisição e delega o processamento
+- O Service orquestra o fluxo da aplicação
+- O Repository centraliza as consultas e operações de persistência
 - O Model representa a entidade Produto no banco
-- O SQLite armazena os dados localmente
+- O Schema define e valida os dados de entrada e saída
 
-### Diagramas arquiteturais
+### Diagramas C4
 
-- [C4 — Nível 1: Contexto](docs/c4_nivel1_contexto.png)
-- [C4 — Nível 2: Contêineres](docs/c4_nivel2_container.png)
-- [C4 — Nível 3: Componentes](docs/c4_nivel3_componentes.png)
+- [C4 - Nível 1: Contexto](docs/c4_nivel1_contexto.png)
+- [C4 - Nível 2: Contêineres](docs/c4_nivel2_container.png)
+- [C4 - Nível 3: Componentes](docs/c4_nivel3_componentes.png)
 
 ## 4. Tecnologias utilizadas
 
@@ -53,6 +54,7 @@ flowchart LR
 - SQLite
 - Pydantic
 - Uvicorn
+- httpx2, usado pelo TestClient nos testes
 
 ## 5. Estrutura de pastas
 
@@ -61,32 +63,28 @@ Projeto-api/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py                    # Ponto de entrada da aplicação
-│   ├── database.py                # Configuração do banco SQLite e sessão
+│   ├── database.py                # Configuração do banco e sessão
 │   ├── controllers/
-│   │   └── produto_controller.py  # Endpoints HTTP da API
+│   │   └── produto_controller.py  # Endpoints HTTP
 │   ├── models/
 │   │   └── produto_model.py       # Entidade Produto (ORM)
 │   ├── repositories/
-│   │   └── produto_repository.py  # Acesso ao banco e queries
+│   │   └── produto_repository.py  # Consultas e persistência
 │   ├── schemas/
-│   │   └── produto_schema.py      # DTOs e validação com Pydantic
+│   │   └── produto_schema.py      # Validação dos dados
 │   └── services/
-│       └── produto_service.py     # Regras de negócio do domínio
-├── .gitignore                     # Arquivos ignorados pelo Git
-├── requirements.txt               # Dependências do projeto
-├── README.md                      # Documentação do projeto
-├── produtos.db                    # Banco SQLite gerado automaticamente
-└── .venv/                         # Ambiente virtual do projeto
+│       └── produto_service.py     # Orquestração da aplicação
+├── docs/                          # Diagramas arquiteturais C4
+├── tests/                         # Testes unitários e integrados
+│   ├── __init__.py
+│   ├── test_produto_service.py
+│   └── test_produto_integracao.py
+├── .gitignore
+├── requirements.txt
+├── README.md
+├── produtos.db                    # Banco local gerado automaticamente
+└── .venv/                         # Ambiente virtual local
 ```
-
-### Papel de cada componente
-
-- Controller: recebe as requisições HTTP e delega o processamento ao Service
-- Service: encapsula a lógica de negócio e orquestra a aplicação
-- Repository: realiza a persistência e consultas no banco de dados
-- Model: representa a entidade Produto e o mapeamento ORM para o SQLite
-- Schema: define os formatos de entrada e saída da API com validação
-- Database: centraliza a configuração da conexão e a sessão do banco
 
 ## 6. Endpoints da API
 
@@ -94,7 +92,7 @@ Projeto-api/
 |--------|------|-----------|
 | POST | `/produtos` | Cria um novo produto |
 | GET | `/produtos` | Lista todos os produtos |
-| GET | `/produtos/{id}` | Busca produto por ID |
+| GET | `/produtos/{id}` | Busca um produto por ID |
 | GET | `/produtos/nome/{nome}` | Busca produtos por nome |
 | GET | `/produtos/contar` | Retorna o total de produtos |
 | PUT | `/produtos/{id}` | Atualiza um produto existente |
@@ -110,6 +108,8 @@ Projeto-api/
   "estoque": 15
 }
 ```
+
+Use ponto no valor decimal do JSON, como `299.90`, e não vírgula.
 
 ## 7. Como executar o projeto
 
@@ -135,47 +135,39 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3) Rodar a aplicação
+### 3) Executar a aplicação
 
 ```bash
 python -m uvicorn app.main:app --reload
 ```
 
-A API será iniciada em:
+A API ficará disponível em:
 
 - http://127.0.0.1:8000
-- Documentação Swagger: http://127.0.0.1:8000/docs
+- Swagger: http://127.0.0.1:8000/docs
 
 ## 8. Persistência de dados
 
-O banco SQLite é configurado no arquivo [app/database.py](app/database.py) com a URL:
+O SQLite é configurado em [app/database.py](app/database.py). O caminho do banco é calculado a partir da localização do projeto, garantindo que a aplicação use sempre `produtos.db` na raiz do repositório, independentemente da pasta de onde o comando é executado.
 
-```python
-DATABASE_URL = "sqlite:///./produtos.db"
+O arquivo é criado automaticamente ao iniciar a aplicação, caso ainda não exista.
+
+## 9. Testes
+
+Os testes unitários validam o Service com mocks e as regras de validação dos Schemas. Os testes integrados percorrem o fluxo completo:
+
+`Endpoint -> Controller -> Service -> Repository -> SQLite`
+
+Os testes integrados usam um SQLite temporário em memória e não alteram o banco real `produtos.db`.
+
+Para executar todos os testes:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-O arquivo `produtos.db` é gerado automaticamente ao iniciar a aplicação, caso ainda não exista. Isso torna a solução simples de rodar e de testar localmente.
-
-## 9. Observações finais
-
-Este projeto atende aos requisitos principais do desafio:
-
-- API REST com CRUD
-- Arquitetura em camadas com MVC
-- Persistência em banco de dados
-- Separação de responsabilidades
-- Documentação inicial do sistema
-
-Para uma entrega mais completa de um bootcamp, recomenda-se, como continuidade, incluir:
-
-- diagrama UML/C4 no repositório
-- documentação arquitetural mais detalhada
-- testes automatizados
-- possibilidade de expansão para outros domínios (cliente, pedido, etc.)
+A suíte atual possui 11 testes.
 
 ## 10. Conclusão
 
-A solução implementada demonstra uma API funcional, bem estruturada e alinhada ao contexto do desafio final. O projeto cumpre o objetivo de disponibilizar operações de gestão de produtos em uma arquitetura organizada e de fácil manutenção.
-
-
-
+A solução demonstra uma API funcional, documentada e organizada em camadas, com persistência em banco de dados, validação de dados e testes automatizados. A estrutura permite a expansão futura para outros domínios, como clientes e pedidos.
