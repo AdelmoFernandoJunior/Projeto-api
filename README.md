@@ -13,8 +13,10 @@ O domínio escolhido foi Produto, por ser adequado para representar operações 
 - Implementar uma API RESTful em Python com FastAPI
 - Organizar a aplicação em camadas de Controller, Service, Repository, Model e Schema
 - Criar operações de CRUD para produtos
-- Incluir busca por ID, busca por nome e contagem
+- Incluir busca por ID, busca por nome, contagem e paginação
 - Persistir os dados em SQLite
+- Usar `Numeric(10, 2)` para valores monetários
+- Evitar sobrescrita em atualizações concorrentes com controle de versão
 - Documentar a API com Swagger/OpenAPI
 - Proteger os endpoints com API Key
 - Registrar requisições HTTP com status, duração e identificador de correlação
@@ -66,6 +68,8 @@ Projeto-api/
 │   ├── __init__.py
 │   ├── main.py                    # Ponto de entrada da aplicação
 │   ├── database.py                # Configuração do banco e sessão
+│   ├── middleware.py              # Logs e correlação de requisições
+│   ├── security.py                # Autenticação por API Key
 │   ├── controllers/
 │   │   └── produto_controller.py  # Endpoints HTTP
 │   ├── models/
@@ -97,7 +101,7 @@ Projeto-api/
 | GET | `/produtos/{id}` | Busca um produto por ID |
 | GET | `/produtos/nome/{nome}` | Busca produtos por nome |
 | GET | `/produtos/contar` | Retorna o total de produtos |
-| PUT | `/produtos/{id}` | Atualiza um produto existente |
+| PUT | `/produtos/{id}` | Atualiza parcialmente usando controle de versão |
 | DELETE | `/produtos/{id}` | Remove um produto |
 
 ### Exemplo de payload para criação
@@ -161,6 +165,7 @@ $env:LOG_LEVEL = "DEBUG"
   "items": [
     {
       "id": 1,
+      "versao": 1,
       "nome": "Teclado Mecânico",
       "descricao": "Teclado com switches azuis",
       "preco": 299.90,
@@ -213,6 +218,9 @@ A API ficará disponível em:
 O SQLite é configurado em [app/database.py](app/database.py). O caminho do banco é calculado a partir da localização do projeto, garantindo que a aplicação use sempre `produtos.db` na raiz do repositório, independentemente da pasta de onde o comando é executado.
 
 O arquivo é criado automaticamente ao iniciar a aplicação, caso ainda não exista.
+Em bancos SQLite existentes, a aplicação adiciona automaticamente a coluna
+`versao`. Alterações de tipo da coluna `preco` em bancos já existentes devem
+ser feitas com uma migração controlada, como Alembic.
 
 ## 9. Testes
 
@@ -228,7 +236,8 @@ Para executar todos os testes:
 .\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-A suíte atual possui 11 testes.
+A suíte atual possui 19 testes, cobrindo autenticação, paginação, logs,
+validação de entrada, precisão decimal e conflitos de concorrência.
 
 ## 10. Conclusão
 
