@@ -123,6 +123,76 @@ class TestProdutoIntegracao(unittest.TestCase):
         self.assertEqual(resposta.status_code, 401)
         self.assertTrue(resposta.headers["X-Request-ID"])
 
+    def test_api_rejeita_api_key_invalida(self):
+        cliente_com_chave_invalida = TestClient(
+            app,
+            headers={"X-API-Key": "chave-invalida"},
+        )
+
+        resposta = cliente_com_chave_invalida.get("/produtos")
+
+        self.assertEqual(resposta.status_code, 403)
+        self.assertEqual(resposta.json()["detail"], "API Key inválida")
+
+    def test_api_preserva_request_id_fornecido_pelo_cliente(self):
+        request_id = "teste-correlacao-123"
+
+        resposta = self.cliente.get(
+            "/produtos",
+            headers={"X-Request-ID": request_id},
+        )
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.headers["X-Request-ID"], request_id)
+
+    def test_listagem_respeita_paginacao_e_metadados(self):
+        for indice in range(3):
+            resposta = self.cliente.post(
+                "/produtos",
+                json={
+                    "nome": f"Produto {indice}",
+                    "preco": "10.00",
+                    "estoque": 1,
+                },
+            )
+            self.assertEqual(resposta.status_code, 201)
+
+        primeira_pagina = self.cliente.get("/produtos?skip=0&limit=2")
+        segunda_pagina = self.cliente.get("/produtos?skip=2&limit=2")
+
+        self.assertEqual(primeira_pagina.status_code, 200)
+        self.assertEqual(len(primeira_pagina.json()["items"]), 2)
+        self.assertEqual(primeira_pagina.json()["total"], 3)
+        self.assertEqual(primeira_pagina.json()["page"], 1)
+        self.assertTrue(primeira_pagina.json()["has_next"])
+        self.assertEqual(len(segunda_pagina.json()["items"]), 1)
+        self.assertEqual(segunda_pagina.json()["page"], 2)
+        self.assertFalse(segunda_pagina.json()["has_next"])
+
+    def test_listagem_rejeita_parametros_de_paginacao_invalidos(self):
+        limite_invalido = self.cliente.get("/produtos?limit=0")
+        deslocamento_invalido = self.cliente.get("/produtos?skip=-1")
+
+        self.assertEqual(limite_invalido.status_code, 422)
+        self.assertEqual(deslocamento_invalido.status_code, 422)
+
+    def test_atualizacao_exige_versao(self):
+        criado = self.cliente.post(
+            "/produtos",
+            json={
+                "nome": "Produto versionado",
+                "preco": "10.00",
+                "estoque": 1,
+            },
+        )
+
+        resposta = self.cliente.put(
+            f"/produtos/{criado.json()['id']}",
+            json={"estoque": 2},
+        )
+
+        self.assertEqual(resposta.status_code, 422)
+
 
 if __name__ == "__main__":
     unittest.main()

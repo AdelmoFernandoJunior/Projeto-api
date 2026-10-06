@@ -91,6 +91,14 @@ class TestProdutoSchema(unittest.TestCase):
         with self.assertRaises(ValidationError):
             ProdutoCreate(nome="Brinquedo inválido", preco=10, estoque=-1)
 
+    def test_atualizacao_deve_informar_versao(self):
+        with self.assertRaises(ValidationError):
+            ProdutoUpdate(preco=10)
+
+    def test_versao_de_atualizacao_deve_ser_positiva(self):
+        with self.assertRaises(ValidationError):
+            ProdutoUpdate(versao=0, preco=10)
+
 
 if __name__ == "__main__":
     unittest.main()
