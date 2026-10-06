@@ -16,6 +16,7 @@ O domínio escolhido foi Produto, por ser adequado para representar operações 
 - Incluir busca por ID, busca por nome e contagem
 - Persistir os dados em SQLite
 - Documentar a API com Swagger/OpenAPI
+- Proteger os endpoints com API Key
 - Criar testes unitários e integrados
 
 ## 3. Arquitetura da solução
@@ -91,7 +92,7 @@ Projeto-api/
 | Método | Rota | Descrição |
 |--------|------|-----------|
 | POST | `/produtos` | Cria um novo produto |
-| GET | `/produtos` | Lista todos os produtos |
+| GET | `/produtos` | Lista produtos com paginação (`skip` e `limit`) e metadados |
 | GET | `/produtos/{id}` | Busca um produto por ID |
 | GET | `/produtos/nome/{nome}` | Busca produtos por nome |
 | GET | `/produtos/contar` | Retorna o total de produtos |
@@ -110,6 +111,44 @@ Projeto-api/
 ```
 
 Use ponto no valor decimal do JSON, como `299.90`, e não vírgula.
+
+### Autenticação
+
+Os endpoints de `/produtos` exigem uma API Key no cabeçalho `X-API-Key`.
+Por padrão, o ambiente local usa `dev-api-key`. Em outros ambientes, defina
+a variável `API_KEY` antes de iniciar a aplicação:
+
+```powershell
+$env:API_KEY = "uma-chave-secreta"
+python -m uvicorn app.main:app --reload
+```
+
+Exemplo de requisição autenticada:
+
+```powershell
+curl.exe -H "X-API-Key: uma-chave-secreta" http://127.0.0.1:8000/produtos
+```
+
+### Exemplo de resposta paginada
+
+`GET /produtos?skip=0&limit=20`
+
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "nome": "Teclado Mecânico",
+      "descricao": "Teclado com switches azuis",
+      "preco": 299.90,
+      "estoque": 15
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "has_next": false
+}
+```
 
 ## 7. Como executar o projeto
 

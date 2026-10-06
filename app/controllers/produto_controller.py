@@ -2,14 +2,24 @@
 Controller: recebe as requisições HTTP, delega ao Service e devolve a
 resposta. Não contém lógica de negócio nem acesso direto ao banco.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.services.produto_service import ProdutoService
-from app.schemas.produto_schema import ProdutoCreate, ProdutoUpdate, ProdutoResponse
+from app.security import require_api_key
+from app.schemas.produto_schema import (
+    ProdutoCreate,
+    ProdutoListaResponse,
+    ProdutoUpdate,
+    ProdutoResponse,
+)
 
-router = APIRouter(prefix="/produtos", tags=["Produtos"])
+router = APIRouter(
+    prefix="/produtos",
+    tags=["Produtos"],
+    dependencies=[Depends(require_api_key)],
+)
 
 
 @router.post("", response_model=ProdutoResponse, status_code=status.HTTP_201_CREATED)
@@ -18,17 +28,25 @@ def criar_produto(produto: ProdutoCreate, db: Session = Depends(get_db)):
     return service.criar_produto(produto)
 
 
-@router.get("", response_model=list[ProdutoResponse])
-def listar_todos(db: Session = Depends(get_db)):
-    service = ProdutoService(db)
-    return service.listar_todos()
-
-
 @router.get("/contar")
 def contar_produtos(db: Session = Depends(get_db)):
     service = ProdutoService(db)
     return {"total": service.contar_produtos()}
 
+@router.get("", response_model=ProdutoListaResponse)
+def listar_todos(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1),
+    db: Session = Depends(get_db),
+):
+    service = ProdutoService(db)
+    produtos, total = service.listar_todos(skip=skip, limit=limit)
+    return {
+        "items": produtos,
+        "total": total,
+        "page": (skip // limit) + 1,
+        "has_next": skip + len(produtos) < total,
+    }
 
 @router.get("/nome/{nome}", response_model=list[ProdutoResponse])
 def buscar_por_nome(nome: str, db: Session = Depends(get_db)):

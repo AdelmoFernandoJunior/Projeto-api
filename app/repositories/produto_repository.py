@@ -19,8 +19,11 @@ class ProdutoRepository:
         self.db.refresh(novo_produto)
         return novo_produto
 
-    def listar_todos(self) -> list[Produto]:
-        return self.db.query(Produto).all()
+    def listar_todos(self, skip: int = 0, limit: int = 20) -> tuple[list[Produto], int]:
+        consulta = self.db.query(Produto)
+        total = consulta.count()
+        produtos = consulta.offset(skip).limit(limit).all()
+        return produtos, total
 
     def buscar_por_id(self, produto_id: int) -> Produto | None:
         return self.db.query(Produto).filter(Produto.id == produto_id).first()

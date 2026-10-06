@@ -5,12 +5,12 @@ interna do banco diretamente e permite validação automática.
 """
 from pydantic import BaseModel, Field
 from typing import Optional
-
+from decimal import Decimal
 
 class ProdutoBase(BaseModel):
     nome: str = Field(..., min_length=1, max_length=120)
     descricao: Optional[str] = Field(None, max_length=500)
-    preco: float = Field(..., gt=0, description="Preço deve ser maior que zero")
+    preco: Decimal = Field(..., gt=0, description="Preço deve ser maior que zero")
     estoque: int = Field(0, ge=0, description="Estoque não pode ser negativo")
 
 
@@ -23,7 +23,7 @@ class ProdutoUpdate(BaseModel):
     """Usado no PUT - todos os campos opcionais, permite update parcial."""
     nome: Optional[str] = Field(None, min_length=1, max_length=120)
     descricao: Optional[str] = Field(None, max_length=500)
-    preco: Optional[float] = Field(None, gt=0)
+    preco: Optional[Decimal] = Field(None, gt=0)
     estoque: Optional[int] = Field(None, ge=0)
 
 
@@ -33,3 +33,11 @@ class ProdutoResponse(ProdutoBase):
 
     class Config:
         from_attributes = True  # permite converter direto do objeto ORM
+
+
+class ProdutoListaResponse(BaseModel):
+    """Resposta paginada da listagem de produtos."""
+    items: list[ProdutoResponse]
+    total: int
+    page: int
+    has_next: bool

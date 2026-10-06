@@ -33,7 +33,7 @@ class TestProdutoIntegracao(unittest.TestCase):
 
         cls.sobrescrever_banco = sobrescrever_banco
         app.dependency_overrides[get_db] = sobrescrever_banco
-        cls.cliente = TestClient(app)
+        cls.cliente = TestClient(app, headers={"X-API-Key": "dev-api-key"})
 
     @classmethod
     def tearDownClass(cls):
@@ -64,7 +64,10 @@ class TestProdutoIntegracao(unittest.TestCase):
 
         listado = self.cliente.get("/produtos")
         self.assertEqual(listado.status_code, 200)
-        self.assertEqual(len(listado.json()), 1)
+        self.assertEqual(len(listado.json()["items"]), 1)
+        self.assertEqual(listado.json()["total"], 1)
+        self.assertEqual(listado.json()["page"], 1)
+        self.assertFalse(listado.json()["has_next"])
 
         por_id = self.cliente.get(f"/produtos/{produto_id}")
         self.assertEqual(por_id.status_code, 200)
@@ -104,6 +107,13 @@ class TestProdutoIntegracao(unittest.TestCase):
         )
 
         self.assertEqual(resposta.status_code, 422)
+
+    def test_api_rejeita_requisicao_sem_api_key(self):
+        cliente_sem_chave = TestClient(app)
+
+        resposta = cliente_sem_chave.get("/produtos")
+
+        self.assertEqual(resposta.status_code, 401)
 
 
 if __name__ == "__main__":

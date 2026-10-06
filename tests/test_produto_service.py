@@ -30,12 +30,12 @@ class TestProdutoService(unittest.TestCase):
 
     def test_listar_todos_delega_para_o_repository(self):
         produtos = [Mock(id=1), Mock(id=2)]
-        self.repository.listar_todos.return_value = produtos
+        self.repository.listar_todos.return_value = produtos, 6
 
-        resultado = self.service.listar_todos()
+        resultado = self.service.listar_todos(skip=2, limit=2)
 
-        self.assertEqual(resultado, produtos)
-        self.repository.listar_todos.assert_called_once_with()
+        self.assertEqual(resultado, (produtos, 6))
+        self.repository.listar_todos.assert_called_once_with(skip=2, limit=2)
 
     def test_buscar_por_id_delega_para_o_repository(self):
         produto = Mock(id=3)

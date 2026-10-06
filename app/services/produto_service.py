@@ -16,8 +16,8 @@ class ProdutoService:
     def criar_produto(self, produto: ProdutoCreate) -> Produto:
         return self.repository.criar(produto)
 
-    def listar_todos(self) -> list[Produto]:
-        return self.repository.listar_todos()
+    def listar_todos(self, skip: int = 0, limit: int = 20) -> tuple[list[Produto], int]:
+        return self.repository.listar_todos(skip=skip, limit=limit)
 
     def buscar_por_id(self, produto_id: int) -> Produto | None:
         return self.repository.buscar_por_id(produto_id)
