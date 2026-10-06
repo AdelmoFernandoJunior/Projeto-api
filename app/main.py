@@ -3,8 +3,18 @@ Ponto de entrada da aplicação: cria a instância do FastAPI,
 inicializa o banco de dados e registra as rotas (Controllers).
 """
 from fastapi import FastAPI
+import logging
+import os
+
 from app.database import Base, engine, garantir_coluna_versao
 from app.controllers import produto_controller
+from app.middleware import log_requests
+
+
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
 
 # Cria as tabelas no banco (se ainda não existirem)
 Base.metadata.create_all(bind=engine)
@@ -15,6 +25,8 @@ app = FastAPI(
     description="API REST em padrão MVC para gestão de produtos - Desafio Final Arquiteto(a) de Software",
     version="1.0.0",
 )
+
+app.middleware("http")(log_requests)
 
 app.include_router(produto_controller.router)
 

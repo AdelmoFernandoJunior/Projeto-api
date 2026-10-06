@@ -121,6 +121,7 @@ class TestProdutoIntegracao(unittest.TestCase):
         resposta = cliente_sem_chave.get("/produtos")
 
         self.assertEqual(resposta.status_code, 401)
+        self.assertTrue(resposta.headers["X-Request-ID"])
 
 
 if __name__ == "__main__":

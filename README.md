@@ -17,6 +17,7 @@ O domínio escolhido foi Produto, por ser adequado para representar operações 
 - Persistir os dados em SQLite
 - Documentar a API com Swagger/OpenAPI
 - Proteger os endpoints com API Key
+- Registrar requisições HTTP com status, duração e identificador de correlação
 - Criar testes unitários e integrados
 
 ## 3. Arquitetura da solução
@@ -138,6 +139,17 @@ Exemplo de requisição autenticada:
 
 ```powershell
 curl.exe -H "X-API-Key: uma-chave-secreta" http://127.0.0.1:8000/produtos
+```
+
+### Logs e monitoramento
+
+Cada requisição gera um log com método, rota, status, duração e `request_id`.
+O mesmo identificador é devolvido no header `X-Request-ID`, facilitando a
+correlação entre a resposta e os logs. O nível padrão é `INFO` e pode ser
+alterado com `LOG_LEVEL`:
+
+```powershell
+$env:LOG_LEVEL = "DEBUG"
 ```
 
 ### Exemplo de resposta paginada
