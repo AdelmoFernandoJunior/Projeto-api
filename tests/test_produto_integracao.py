@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-
+from decimal import Decimal
 from app.database import Base, get_db
 from app.main import app
 
@@ -87,7 +87,7 @@ class TestProdutoIntegracao(unittest.TestCase):
         )
         self.assertEqual(atualizado.status_code, 200)
         self.assertEqual(atualizado.json()["versao"], 2)
-        self.assertEqual(float(atualizado.json()["preco"]), 44.90)
+        self.assertEqual(Decimal(atualizado.json()["preco"]), Decimal("44.90"))
         self.assertEqual(atualizado.json()["estoque"], 3)
 
         conflito = self.cliente.put(

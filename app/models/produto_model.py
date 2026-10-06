@@ -2,7 +2,7 @@
 Model: representa a entidade de domínio Produto e seu mapeamento
 para a tabela do banco de dados (camada M do MVC).
 """
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, Numeric, String
 from app.database import Base
 
 
@@ -12,6 +12,6 @@ class Produto(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     nome = Column(String(120), nullable=False, index=True)
     descricao = Column(String(500), nullable=True)
-    preco = Column(Float, nullable=False)
+    preco = Column(Numeric(10, 2), nullable=False)
     estoque = Column(Integer, nullable=False, default=0)
     versao = Column(Integer, nullable=False, default=1)
