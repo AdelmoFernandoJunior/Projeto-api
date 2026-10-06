@@ -112,6 +112,17 @@ Projeto-api/
 
 Use ponto no valor decimal do JSON, como `299.90`, e não vírgula.
 
+Para atualizar um produto com segurança, envie a `versao` retornada na última
+leitura. Se outro cliente já tiver atualizado o produto, a API retorna `409`
+em vez de sobrescrever a alteração:
+
+```json
+{
+  "versao": 1,
+  "preco": 319.90
+}
+```
+
 ### Autenticação
 
 Os endpoints de `/produtos` exigem uma API Key no cabeçalho `X-API-Key`.

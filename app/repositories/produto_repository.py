@@ -2,9 +2,14 @@
 Repository: isola todo o acesso ao banco de dados (queries).
 O Service não sabe como os dados são armazenados, apenas chama estes métodos.
 """
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 from app.models.produto_model import Produto
 from app.schemas.produto_schema import ProdutoCreate, ProdutoUpdate
+
+
+class ConcorrenciaProdutoError(Exception):
+    """Indica que o produto foi alterado desde a leitura do cliente."""
 
 
 class ProdutoRepository:
@@ -35,13 +40,23 @@ class ProdutoRepository:
         return self.db.query(Produto).count()
 
     def atualizar(self, produto_id: int, dados: ProdutoUpdate) -> Produto | None:
+        campos = dados.model_dump(exclude={"versao"}, exclude_unset=True)
+        campos["versao"] = Produto.versao + 1
+        resultado = self.db.execute(
+            update(Produto)
+            .where(Produto.id == produto_id, Produto.versao == dados.versao)
+            .values(**campos)
+        )
+        if resultado.rowcount == 0:
+            self.db.rollback()
+            if self.buscar_por_id(produto_id) is None:
+                return None
+            raise ConcorrenciaProdutoError
+
+        self.db.commit()
         produto = self.buscar_por_id(produto_id)
         if produto is None:
             return None
-        for campo, valor in dados.model_dump(exclude_unset=True).items():
-            setattr(produto, campo, valor)
-        self.db.commit()
-        self.db.refresh(produto)
         return produto
 
     def deletar(self, produto_id: int) -> bool:

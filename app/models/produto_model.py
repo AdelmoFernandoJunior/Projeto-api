@@ -14,3 +14,4 @@ class Produto(Base):
     descricao = Column(String(500), nullable=True)
     preco = Column(Float, nullable=False)
     estoque = Column(Integer, nullable=False, default=0)
+    versao = Column(Integer, nullable=False, default=1)

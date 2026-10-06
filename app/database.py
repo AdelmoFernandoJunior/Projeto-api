@@ -5,7 +5,7 @@ para PostgreSQL/MySQL apenas mudando a DATABASE_URL.
 """
 from pathlib import Path
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 DATABASE_PATH = Path(__file__).resolve().parent.parent / "produtos.db"
@@ -19,6 +19,18 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
+
+def garantir_coluna_versao():
+    """Adiciona a coluna de concorrência em bancos SQLite já existentes."""
+    if engine.dialect.name != "sqlite":
+        return
+    colunas = {coluna["name"] for coluna in inspect(engine).get_columns("produtos")}
+    if "versao" not in colunas:
+        with engine.begin() as conexao:
+            conexao.execute(
+                text("ALTER TABLE produtos ADD COLUMN versao INTEGER NOT NULL DEFAULT 1")
+            )
 
 
 def get_db():

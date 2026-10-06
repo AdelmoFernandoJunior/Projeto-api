@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.repositories.produto_repository import ConcorrenciaProdutoError
 from app.services.produto_service import ProdutoService
 from app.security import require_api_key
 from app.schemas.produto_schema import (
@@ -66,7 +67,13 @@ def buscar_por_id(produto_id: int, db: Session = Depends(get_db)):
 @router.put("/{produto_id}", response_model=ProdutoResponse)
 def atualizar_produto(produto_id: int, dados: ProdutoUpdate, db: Session = Depends(get_db)):
     service = ProdutoService(db)
-    produto = service.atualizar_produto(produto_id, dados)
+    try:
+        produto = service.atualizar_produto(produto_id, dados)
+    except ConcorrenciaProdutoError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Produto foi alterado por outro cliente; recarregue e tente novamente",
+        )
     if produto is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Produto não encontrado")
     return produto

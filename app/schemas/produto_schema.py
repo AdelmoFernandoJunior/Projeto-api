@@ -20,7 +20,8 @@ class ProdutoCreate(ProdutoBase):
 
 
 class ProdutoUpdate(BaseModel):
-    """Usado no PUT - todos os campos opcionais, permite update parcial."""
+    """Usado no PUT - update parcial protegido por concorrência otimista."""
+    versao: int = Field(..., ge=1, description="Versão lida antes da atualização")
     nome: Optional[str] = Field(None, min_length=1, max_length=120)
     descricao: Optional[str] = Field(None, max_length=500)
     preco: Optional[Decimal] = Field(None, gt=0)
@@ -30,6 +31,7 @@ class ProdutoUpdate(BaseModel):
 class ProdutoResponse(ProdutoBase):
     """Usado nas respostas da API - inclui o ID gerado pelo banco."""
     id: int
+    versao: int
 
     class Config:
         from_attributes = True  # permite converter direto do objeto ORM

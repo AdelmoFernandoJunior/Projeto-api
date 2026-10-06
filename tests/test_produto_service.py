@@ -64,7 +64,7 @@ class TestProdutoService(unittest.TestCase):
         self.repository.contar.assert_called_once_with()
 
     def test_atualizar_produto_delega_para_o_repository(self):
-        dados = ProdutoUpdate(preco=49.90)
+        dados = ProdutoUpdate(versao=1, preco=49.90)
         produto = Mock(id=5)
         self.repository.atualizar.return_value = produto
 

@@ -3,11 +3,12 @@ Ponto de entrada da aplicação: cria a instância do FastAPI,
 inicializa o banco de dados e registra as rotas (Controllers).
 """
 from fastapi import FastAPI
-from app.database import Base, engine
+from app.database import Base, engine, garantir_coluna_versao
 from app.controllers import produto_controller
 
 # Cria as tabelas no banco (se ainda não existirem)
 Base.metadata.create_all(bind=engine)
+garantir_coluna_versao()
 
 app = FastAPI(
     title="API de Produtos",

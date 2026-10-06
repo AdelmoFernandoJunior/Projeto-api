@@ -83,11 +83,18 @@ class TestProdutoIntegracao(unittest.TestCase):
 
         atualizado = self.cliente.put(
             f"/produtos/{produto_id}",
-            json={"preco": 44.90, "estoque": 3},
+            json={"versao": produto["versao"], "preco": 44.90, "estoque": 3},
         )
         self.assertEqual(atualizado.status_code, 200)
-        self.assertEqual(atualizado.json()["preco"], 44.90)
+        self.assertEqual(atualizado.json()["versao"], 2)
+        self.assertEqual(float(atualizado.json()["preco"]), 44.90)
         self.assertEqual(atualizado.json()["estoque"], 3)
+
+        conflito = self.cliente.put(
+            f"/produtos/{produto_id}",
+            json={"versao": produto["versao"], "estoque": 1},
+        )
+        self.assertEqual(conflito.status_code, 409)
 
         removido = self.cliente.delete(f"/produtos/{produto_id}")
         self.assertEqual(removido.status_code, 204)
