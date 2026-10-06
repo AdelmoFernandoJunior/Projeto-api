@@ -81,7 +81,7 @@ class TestProdutoIntegracao(unittest.TestCase):
         self.assertEqual(contagem.status_code, 200)
         self.assertEqual(contagem.json(), {"total": 1})
 
-        atualizado = self.cliente.put(
+        atualizado = self.cliente.patch(
             f"/produtos/{produto_id}",
             json={"versao": produto["versao"], "preco": 44.90, "estoque": 3},
         )
@@ -90,7 +90,7 @@ class TestProdutoIntegracao(unittest.TestCase):
         self.assertEqual(Decimal(atualizado.json()["preco"]), Decimal("44.90"))
         self.assertEqual(atualizado.json()["estoque"], 3)
 
-        conflito = self.cliente.put(
+        conflito = self.cliente.patch(
             f"/produtos/{produto_id}",
             json={"versao": produto["versao"], "estoque": 1},
         )
@@ -186,9 +186,22 @@ class TestProdutoIntegracao(unittest.TestCase):
             },
         )
 
-        resposta = self.cliente.put(
+        resposta = self.cliente.patch(
             f"/produtos/{criado.json()['id']}",
             json={"estoque": 2},
+        )
+
+        self.assertEqual(resposta.status_code, 422)
+
+    def test_put_exige_todos_os_campos_do_produto(self):
+        criado = self.cliente.post(
+            "/produtos",
+            json={"nome": "Produto completo", "preco": "10.00", "estoque": 1},
+        )
+
+        resposta = self.cliente.put(
+            f"/produtos/{criado.json()['id']}",
+            json={"versao": criado.json()["versao"], "estoque": 2},
         )
 
         self.assertEqual(resposta.status_code, 422)

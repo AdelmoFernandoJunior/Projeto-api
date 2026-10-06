@@ -20,12 +20,17 @@ class ProdutoCreate(ProdutoBase):
 
 
 class ProdutoUpdate(BaseModel):
-    """Usado no PUT - update parcial protegido por concorrência otimista."""
+    """Usado no PATCH - atualização parcial protegida por concorrência otimista."""
     versao: int = Field(..., ge=1, description="Versão lida antes da atualização")
     nome: Optional[str] = Field(None, min_length=1, max_length=120)
     descricao: Optional[str] = Field(None, max_length=500)
     preco: Optional[Decimal] = Field(None, gt=0)
     estoque: Optional[int] = Field(None, ge=0)
+
+
+class ProdutoReplace(ProdutoBase):
+    """Usado no PUT - substituição completa protegida por concorrência."""
+    versao: int = Field(..., ge=1, description="Versão lida antes da atualização")
 
 
 class ProdutoResponse(ProdutoBase):

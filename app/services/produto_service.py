@@ -4,7 +4,7 @@ Nenhuma query SQL aparece aqui - apenas regras de negócio e orquestração.
 """
 from sqlalchemy.orm import Session
 from app.repositories.produto_repository import ProdutoRepository
-from app.schemas.produto_schema import ProdutoCreate, ProdutoUpdate
+from app.schemas.produto_schema import ProdutoCreate, ProdutoReplace, ProdutoUpdate
 from app.models.produto_model import Produto
 
 
@@ -28,7 +28,11 @@ class ProdutoService:
     def contar_produtos(self) -> int:
         return self.repository.contar()
 
-    def atualizar_produto(self, produto_id: int, dados: ProdutoUpdate) -> Produto | None:
+    def atualizar_produto(
+        self,
+        produto_id: int,
+        dados: ProdutoUpdate | ProdutoReplace,
+    ) -> Produto | None:
         return self.repository.atualizar(produto_id, dados)
 
     def deletar_produto(self, produto_id: int) -> bool:

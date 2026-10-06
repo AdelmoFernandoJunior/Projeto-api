@@ -88,6 +88,7 @@ Projeto-api/
 ├── .gitignore
 ├── requirements.txt
 ├── README.md
+├── Dockerfile
 ├── produtos.db                    # Banco local gerado automaticamente
 └── .venv/                         # Ambiente virtual local
 ```
@@ -101,7 +102,8 @@ Projeto-api/
 | GET | `/produtos/{id}` | Busca um produto por ID |
 | GET | `/produtos/nome/{nome}` | Busca produtos por nome |
 | GET | `/produtos/contar` | Retorna o total de produtos |
-| PUT | `/produtos/{id}` | Atualiza parcialmente usando controle de versão |
+| PUT | `/produtos/{id}` | Substitui o produto inteiro usando controle de versão |
+| PATCH | `/produtos/{id}` | Atualiza parcialmente usando controle de versão |
 | DELETE | `/produtos/{id}` | Remove um produto |
 
 ### Exemplo de payload para criação
@@ -118,8 +120,7 @@ Projeto-api/
 Use ponto no valor decimal do JSON, como `299.90`, e não vírgula.
 
 Para atualizar um produto com segurança, envie a `versao` retornada na última
-leitura. Se outro cliente já tiver atualizado o produto, a API retorna `409`
-em vez de sobrescrever a alteração:
+leitura. Use `PATCH` para alterar somente alguns campos:
 
 ```json
 {
@@ -127,6 +128,10 @@ em vez de sobrescrever a alteração:
   "preco": 319.90
 }
 ```
+
+O `PUT` exige todos os campos do produto (`nome`, `descricao`, `preco`,
+`estoque` e `versao`). Se outro cliente já tiver atualizado o produto, ambas
+as operações retornam `409` em vez de sobrescrever a alteração.
 
 ### Autenticação
 
@@ -155,6 +160,19 @@ alterado com `LOG_LEVEL`:
 ```powershell
 $env:LOG_LEVEL = "DEBUG"
 ```
+
+### Deploy com Docker
+
+Construir e executar a imagem:
+
+```powershell
+docker build -t produto-api .
+docker run --rm -p 8000:8000 -e API_KEY="uma-chave-secreta" produto-api
+```
+
+O workflow [ci.yml](.github/workflows/ci.yml) executa os testes a cada push e
+pull request. Em produção, use um banco gerenciado e uma migração formal,
+como Alembic, em vez do SQLite local.
 
 ### Exemplo de resposta paginada
 
@@ -236,7 +254,7 @@ Para executar todos os testes:
 .\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-A suíte atual possui 19 testes, cobrindo autenticação, paginação, logs,
+A suíte atual possui 20 testes, cobrindo autenticação, paginação, logs,
 validação de entrada, precisão decimal e conflitos de concorrência.
 
 ## 10. Conclusão

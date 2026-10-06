@@ -5,7 +5,7 @@ O Service não sabe como os dados são armazenados, apenas chama estes métodos.
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 from app.models.produto_model import Produto
-from app.schemas.produto_schema import ProdutoCreate, ProdutoUpdate
+from app.schemas.produto_schema import ProdutoCreate, ProdutoReplace, ProdutoUpdate
 
 
 class ConcorrenciaProdutoError(Exception):
@@ -39,7 +39,11 @@ class ProdutoRepository:
     def contar(self) -> int:
         return self.db.query(Produto).count()
 
-    def atualizar(self, produto_id: int, dados: ProdutoUpdate) -> Produto | None:
+    def atualizar(
+        self,
+        produto_id: int,
+        dados: ProdutoUpdate | ProdutoReplace,
+    ) -> Produto | None:
         campos = dados.model_dump(exclude={"versao"}, exclude_unset=True)
         campos["versao"] = Produto.versao + 1
         resultado = self.db.execute(

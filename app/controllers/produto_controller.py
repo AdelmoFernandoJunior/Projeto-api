@@ -12,6 +12,7 @@ from app.security import require_api_key
 from app.schemas.produto_schema import (
     ProdutoCreate,
     ProdutoListaResponse,
+    ProdutoReplace,
     ProdutoUpdate,
     ProdutoResponse,
 )
@@ -64,8 +65,7 @@ def buscar_por_id(produto_id: int, db: Session = Depends(get_db)):
     return produto
 
 
-@router.put("/{produto_id}", response_model=ProdutoResponse)
-def atualizar_produto(produto_id: int, dados: ProdutoUpdate, db: Session = Depends(get_db)):
+def _atualizar_produto(produto_id: int, dados, db: Session):
     service = ProdutoService(db)
     try:
         produto = service.atualizar_produto(produto_id, dados)
@@ -77,6 +77,24 @@ def atualizar_produto(produto_id: int, dados: ProdutoUpdate, db: Session = Depen
     if produto is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Produto não encontrado")
     return produto
+
+
+@router.put("/{produto_id}", response_model=ProdutoResponse)
+def substituir_produto(
+    produto_id: int,
+    dados: ProdutoReplace,
+    db: Session = Depends(get_db),
+):
+    return _atualizar_produto(produto_id, dados, db)
+
+
+@router.patch("/{produto_id}", response_model=ProdutoResponse)
+def atualizar_parcialmente_produto(
+    produto_id: int,
+    dados: ProdutoUpdate,
+    db: Session = Depends(get_db),
+):
+    return _atualizar_produto(produto_id, dados, db)
 
 
 @router.delete("/{produto_id}", status_code=status.HTTP_204_NO_CONTENT)
